@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Привет, {{ user_name }}!</h2>
+    <p>Подтверди почту на сайте <strong>3D-outlet</strong>.</p>
+    <p>Твой код верификации:</p>
+    <div style="background: #f1f2f6; padding: 15px; text-align: center; font-size: 20px; letter-spacing: 2px; font-family: monospace; border: 1px dashed #ced4da;">
+        <strong>{{ verify_code }}</strong>
+    </div>
+    <a href="{{ frontend_url }}" class="btn">Перейти к входу</a>
+{% endblock %}
