@@ -20,14 +20,14 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/home/appuser/.cache/uv \
-    --mount=type=secret,id=uv_index_gitlab_username \
-    --mount=type=secret,id=uv_index_gitlab_password \
-    export UV_INDEX_GITLAB_USERNAME=$(cat /run/secrets/uv_index_gitlab_username) && \
-    export UV_INDEX_GITLAB_PASSWORD=$(cat /run/secrets/uv_index_gitlab_password) && \
     uv venv /app/.venv && \
     uv sync --frozen --no-install-project --no-dev
-
+ 
+    
 COPY . .
+
+RUN --mount=type=cache,target=/home/appuser/.cache/uv \
+    uv sync --frozen --no-dev
 
 
 RUN chown -R appuser:appuser /app && \
@@ -36,4 +36,4 @@ RUN chown -R appuser:appuser /app && \
 USER appuser
 
 
-CMD ["sh", "-c", "/app/.venv/bin/python -m uvicorn src.main:app --host 0.0.0.0 --port 8000"]
+CMD  ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"]

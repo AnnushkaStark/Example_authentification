@@ -1,6 +1,6 @@
 services:
   auth_db:
-    image: postgres:13
+    image: postgres:16
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -8,7 +8,6 @@ services:
       - .env
     environment:
       POSTGRES_AUTH_DB: $POSTGRES_DB
-      POSTGRES_USER_DB: $POSTGRES_USER_DB
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -51,7 +50,6 @@ services:
     env_file:
       - .env
     environment:
-      PYTHONPATH: /app
       AUTH_CONFIG__DB__HOST: db
       AUTH_CONFIG__DB__PORT: 5432
     depends_on:
@@ -60,18 +58,17 @@ services:
     networks:
       - app-network
   
-  worker:
-    build: 
-      context: .
-      dockerfile: Dockerfile 
-    command: sh -c "python -m taskiq worker src.tasks:broker src.tasks"
-    
-    env_file: .env
-    depends_on:
-      - redis
-      - auth_db
-    networks:
-      - app-network 
+ # worker:
+ #   build:
+ #     context: .
+  #    dockerfile: Dockerfile
+  #  command: sh -c "python -m taskiq worker src.tasks:broker src.tasks"
+  #  env_file: .env
+  #  depends_on:
+  #    - redis
+  #    - auth_db
+  #  networks:
+  #    - app-network 
 
 volumes:
   pgdata:

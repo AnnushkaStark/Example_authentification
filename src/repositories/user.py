@@ -1,7 +1,7 @@
-from dddshared.models.user import User
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models import User
 from src.repositories.base import BaseRepository
 
 
@@ -17,6 +17,6 @@ class UserRepository(BaseRepository):
 
     async def get_by_phone_number(self, phone: str) -> User | None:
         result = await self.session.execute(
-            select(self.model).where(self.model.phone_number == phone)
+            select(self.model).where(self.model.phone == phone)
         )
         return result.scalar_one_or_none()

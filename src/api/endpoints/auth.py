@@ -8,10 +8,13 @@ from fastapi.requests import Request
 
 from src.api.depends.auth import AuthServiceDepends
 from src.api.depends.auth import Credentilals
+from src.api.depends.auth import get_current_user
+from src.config.configs import facebook_settings
 from src.config.configs import google_settings
 from src.config.configs import yandex_settings
 from src.constants.errors import ErrorCodes
 from src.schemas.auth import BaseRegister
+from src.schemas.auth import UserLogin
 from src.utils.errors import errs
 
 router = APIRouter()
@@ -41,7 +44,7 @@ async def create_user(
     ),
 )
 async def login_jwt(
-    schema: BaseRegister,
+    schema: UserLogin,
     service: AuthServiceDepends,
     user_agent: str | None = Header(None, alias="User-Agent"),
     x_real_ip: str | None = Header(None, alias="X-Real-IP"),
@@ -153,6 +156,20 @@ async def get_tg_callback(
     )
 
 
+@router.get("/facebook/", status_code=status.HTTP_200_OK)
+async def get_facebook_auth_uri():
+    return await facebook_settings.get_authorization_uri()
+
+
+@router.get("/facebook/callback/", status_code=status.HTTP_200_OK)
+async def get_facebook_callback(
+    request: Request, code: str, service: AuthServiceDepends
+):
+    return await service.oaut_media(
+        request=request, media_type="facebook", code=code
+    )
+
+
 @router.post(
     "/auth_phone/",
     responses=errs(e404=ErrorCodes.PHONE_NOT_FOUND),
@@ -167,7 +184,12 @@ async def auth_phone(
 @router.post(
     "/verify_otp/",
     status_code=status.HTTP_200_OK,
-    responses=errs(e404=[ErrorCodes.OTP_NOT_FOUND, ErrorCodes.USER_NOT_FOUND]),
+    responses=errs(
+        e404=[
+            ErrorCodes.VERIFICATION_CODE_NOT_FOUND,
+            ErrorCodes.USER_NOT_FOUND,
+        ]
+    ),
 )
 async def verify_otp(
     code: str,

@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from dddshared.models.auth import UserSession
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models import UserSession
 from src.repositories.base import BaseRepository
 
 

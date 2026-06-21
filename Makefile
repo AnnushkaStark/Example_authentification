@@ -10,8 +10,12 @@ ci:
 	uv run ruff format
 	uv run ruff check --fix
 
-tests:
-	PYTHONPATH=$(PYTHONPATH):. $(PYTHON) pytest --cov=src --cov-report=term-missing $(ARGS)
+migration:
+	PYTHONPATH=$(PYTHONPATH) uv run alembic revision --autogenerate 
+
+upgrade:
+	PYTHONPATH=$(PYTHONPATH) uv run  alembic upgrade head
+
 
 run_home:
 	python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
@@ -23,7 +27,7 @@ up_home:
 	$(COMPOSE_HOME) up --build
 
 down:
-	$(COMPOSE_HOME) down -v
+	$(COMPOSE_HOME) down
 
 venv:
 	uv python install 3.13

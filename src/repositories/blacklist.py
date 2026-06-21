@@ -1,7 +1,7 @@
-from dddshared.models.auth import TokenBlacklist
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models import TokenBlacklist
 from src.repositories.base import BaseRepository
 
 

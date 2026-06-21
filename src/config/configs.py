@@ -59,10 +59,6 @@ class YandexSettings(BaseSetting):
         return base_url + params
 
 
-class IPInfoSettings(BaseSetting):
-    IP_INFO_TOKEN: str
-
-
 class AppSettings(BaseSetting):
     FRONTEND_URL: str
     OAUTH_SUCESS_URL: str
@@ -111,7 +107,6 @@ tg_api_gatway_settings = TgGatwaySettings()
 vk_settings = VkSettings()
 google_settings = GoogleSettings()
 sms_settings = SmsSettings()
-ip_info_settings = IPInfoSettings()
 yandex_settings = YandexSettings()
 app_settings = AppSettings()
 facebook_settings = FacebookSettings()

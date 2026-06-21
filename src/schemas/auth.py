@@ -5,9 +5,12 @@ from pydantic import BaseModel
 from pydantic import EmailStr
 
 
-class BaseRegister(BaseModel):
+class UserLogin(BaseModel):
     email: EmailStr | None = None
     password: str
+
+
+class BaseRegister(UserLogin):
     phone: str
 
 

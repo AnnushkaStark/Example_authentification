@@ -9,6 +9,7 @@ from fastapi.responses import Response
 from fastapi_jwt import JwtAuthorizationCredentials
 from ua_parser import user_agent_parser
 
+from src.commons.oauth.facebook import FacebookClient
 from src.commons.oauth.google import GoogleClient
 from src.commons.oauth.tg import TgClient
 from src.commons.oauth.vk import VkClient
@@ -23,6 +24,7 @@ from src.repositories.user import UserRepository
 from src.repositories.user_session import UserSessionRepository
 from src.schemas.auth import BaseRegister
 from src.schemas.auth import TokenAccessRefresh
+from src.schemas.auth import UserLogin
 from src.schemas.auth import UserSessionBase
 from src.security.password import hash_password
 from src.security.password import verify_password
@@ -32,7 +34,6 @@ from src.security.security import create_tokens
 from src.security.verification import generate_veriify_code
 from src.tasks import send_otp
 from src.utils.logger import logger
-from src.commons.oauth.facebook import FacebookClient
 
 
 class AuthService:
@@ -45,7 +46,7 @@ class AuthService:
         vk_client: VkClient,
         tg_client: TgClient,
         state: State,
-        facebook_client: FacebookClient
+        facebook_client: FacebookClient,
     ):
         self.user_repository = user_repository
         self.user_session_repository = user_session_repository
@@ -125,7 +126,9 @@ class AuthService:
         return tokens
 
     async def login_jwt(
-        self, schema: BaseRegister, header: str, ip: str
+        self,
+        schema: UserLogin,
+        request: Request,
     ) -> dict[str, str]:
         logger.info("Aутентификация пользователя")
         found_user = await self.user_repository.get_by_email(
@@ -144,7 +147,7 @@ class AuthService:
         return await self._create_user_session(
             uid=str(found_user.uid),
             user_id=found_user.id,
-            header=header,
+            request=request,
         )
 
     async def refresh(
@@ -301,9 +304,7 @@ class AuthService:
             phone=email_or_phone if "@" not in email_or_phone else None,
         )
         tokens = await self._create_user_session(
-            uid=user.uid,
-            user_id=user.id,
-            request=request
+            uid=user.uid, user_id=user.id, request=request
         )
         return self._set_cokie(token_data=tokens)
 
@@ -321,9 +322,7 @@ class AuthService:
 
         await send_otp.kiq(code=code, phone=phone, mode=mode)
 
-    async def login_otp(
-        self, code: str, request: Request
-    ) -> dict[str, str]:
+    async def login_otp(self, code: str, request: Request) -> dict[str, str]:
         logger.info("Проверка отп кода для создания сессии")
         found_number = await self.state.get_state(key=code)
         if not found_number:
@@ -333,9 +332,7 @@ class AuthService:
             phone=found_number.decode("utf-8")
         ):
             return await self._create_user_session(
-                uid=str(found_user.uid),
-                user_id=found_user.id,
-                request=request
+                uid=str(found_user.uid), user_id=found_user.id, request=request
             )
         logger.warning("Пользователь не найдне")
         raise DomainError(ErrorCodes.USER_NOT_FOUND)
