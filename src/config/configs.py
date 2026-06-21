@@ -29,14 +29,15 @@ class RedisSettings(BaseSetting):
     REDIS_URL: str = "redis://redis:6379/0"
 
 
-class EmailSettings(BaseSetting):
-    MAIL_USERNAME: str
-    MAIL_PASSWORD: str
-    MAIL_FROM: str
-    MAIL_PORT: int
-    MAIL_SERVER: str
-    MAIL_STARTTLS: bool
-    MAIL_SSL_TLS: bool
+class FacebookSettings(BaseSetting):
+    FACEBOOK_APP_ID: str
+    FACEBOOK_APP_SECRET: str
+    FACEBOOK_CALLBACK_URL: str
+    FACEBOOK_TOKEN_URL: str
+    FACEBOOK_USER_INFO_URL: str
+
+    def get_authorization_uri(self) -> str:
+        return f"https://www.facebook.com/v10.0/dialog/oauth?client_id={self.FACEBOOK_APP_ID}&redirect_uri={self.FACEBOOK_CALLBACK_URL}&scope=email&response_type=code"  # noqa: E231 E501
 
 
 class YandexSettings(BaseSetting):
@@ -65,21 +66,6 @@ class IPInfoSettings(BaseSetting):
 class AppSettings(BaseSetting):
     FRONTEND_URL: str
     OAUTH_SUCESS_URL: str
-    SERVICE_NAME: str = "auth"
-    SERVICE_VERSION: str = "0.1.0"
-    TG_PROXY: str
-    LOG_LEVEL: str = "INFO"
-
-    @property
-    def log_level(self) -> str:
-        return self.LOG_LEVEL.upper()
-
-    OTLP_ENDPOINT: str
-    PYROSCOPE_HOST: str
-    PYROSCOPE_PORT: int
-    EXCLUDED_URLS: frozenset[str] = frozenset(
-        {"/metrics", "/metrics/", "/auth/openapi.json", "/auth/docs"}
-    )
 
 
 class SmsSettings(BaseSetting):
@@ -128,7 +114,7 @@ sms_settings = SmsSettings()
 ip_info_settings = IPInfoSettings()
 yandex_settings = YandexSettings()
 app_settings = AppSettings()
-email_settings = EmailSettings()
+facebook_settings = FacebookSettings()
 redis_settings = RedisSettings()
 jwt_settings = JWTSettings()
 db_settings = DBSettings()

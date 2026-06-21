@@ -3,13 +3,13 @@ import json
 import secrets
 
 from src.commons.base import ApiClientBase
+from src.commons.state import State
 from src.config.configs import app_settings
 from src.config.configs import auth_bot_settings
-from src.services.state import StateServise
 
 
 class TgClient(ApiClientBase):
-    def __init__(self, state: StateServise):
+    def __init__(self, state: State):
         self.state = state
         self.key = "tg_auth"
         self.auth_url = "https://oauth.telegram.org/auth"

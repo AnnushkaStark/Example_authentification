@@ -3,12 +3,13 @@ from datetime import timedelta
 from typing import Any
 from uuid import UUID
 
-from dddshared.models.base import Base
 from pydantic import BaseModel
 from sqlalchemy import delete
 from sqlalchemy import insert
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from databases.pg import Base
 
 
 class BaseRepository:
@@ -57,9 +58,9 @@ class BaseRepository:
         return result.scalar()
 
     async def partitial_update(
-        self, uid: UUID, new_value: Any, value_name: str, commit: bool = True
+        self, obj_id: int, new_value: Any, value_name: str, commit: bool = True
     ) -> None:
-        obj = await self.get_by_uid(uid=uid)
+        obj = await self.get_by_id(obj_id=obj_id)
         if obj:
             obj.__setattr__(value_name, new_value)
 

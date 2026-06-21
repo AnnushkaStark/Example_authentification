@@ -1,0 +1,82 @@
+services:
+  auth_db:
+    image: postgres:13
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_AUTH_DB: $POSTGRES_DB
+      POSTGRES_USER_DB: $POSTGRES_USER_DB
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_AUTH_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: auth_redis
+    restart: always
+    ports:
+      - "7379:6379"
+    command: >
+      redis-server 
+      --appendonly yes 
+      --appendfsync everysec 
+      --auto-aof-rewrite-percentage 100 
+      --auto-aof-rewrite-min-size 64mb
+      --save 900 1 
+      --save 300 10
+      --maxmemory 512mb 
+      --maxmemory-policy allkeys-lru
+    networks:
+      - app-network
+    volumes:
+      - auth_redis_data:/data
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+      AUTH_CONFIG__DB__HOST: db
+      AUTH_CONFIG__DB__PORT: 5432
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - app-network
+  
+  worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile 
+    command: sh -c "python -m taskiq worker src.tasks:broker src.tasks"
+    
+    env_file: .env
+    depends_on:
+      - redis
+      - auth_db
+    networks:
+      - app-network 
+
+volumes:
+  pgdata:
+  auth_redis_data:
+
+networks:
+  app-network:
+    driver: bridge

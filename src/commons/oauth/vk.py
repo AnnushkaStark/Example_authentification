@@ -1,14 +1,13 @@
 import secrets
 
-from dddshared.logger import log
-
 from src.commons.base import ApiClientBase
+from src.commons.state import State
 from src.config.configs import vk_settings
-from src.services.state import StateServise
+from src.utils.logger import logger
 
 
 class VkClient(ApiClientBase):
-    def __init__(self, state: StateServise):
+    def __init__(self, state: State):
         self.state = state
         self.root_url = "https://id.vk.ru/authorize"
         self.token_url = "https://id.vk.ru/oauth2/auth"
@@ -36,7 +35,7 @@ class VkClient(ApiClientBase):
     ) -> str:
         code_verifier = await self.state.get_state(key=f"vk_auth:{state}")
         if not code_verifier:
-            log.app.error(
+            logger.error(
                 f"Верификатор для state {state} не найден или просрочен"
             )
             return None
@@ -56,12 +55,12 @@ class VkClient(ApiClientBase):
 
         async with self._get_client() as client:
             response = await client.post(self.token_url, data=payload)
-            log.app.info(f"{response.json()}")
+            logger.info(f"{response.json()}")
             token_id = response.json()["id_token"]
             payload = {"client_id": vk_settings.APP_ID, "id_token": token_id}
             response = await client.post(self.user_data_url, data=payload)
 
-            log.app.info(f"{response.json()}")
+            logger.info(f"{response.json()}")
             email = response.json().get("user", {}).get("email", "")
             if email != "":
                 return email

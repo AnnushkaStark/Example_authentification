@@ -1,7 +1,6 @@
 from datetime import timedelta
 from typing import TypedDict
 
-from dddshared.models.enums import Locale
 from fastapi_jwt import JwtAccessBearerCookie
 from fastapi_jwt import JwtRefreshBearer
 
@@ -11,9 +10,7 @@ from src.schemas.auth import TokenAccessRefresh
 
 class TokenSubject(TypedDict):
     uid: str
-    is_verified: bool
     jti: str
-    country: str | None = Locale.RU
 
 
 access_security = JwtAccessBearerCookie(

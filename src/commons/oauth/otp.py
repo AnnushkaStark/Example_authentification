@@ -1,15 +1,14 @@
 import time
 
-from dddshared.logger import log
-
 from src.commons.base import ApiClientBase
 from src.config.configs import sms_settings
 from src.constants.errors import DomainError
 from src.constants.errors import ErrorCodes
+from src.utils.logger import logger
 
 
 class SmsClient(ApiClientBase):
-    log.system.info("Отправка кода авторизации")
+    logger.info("Отправка кода авторизации")
     root_url = "https://api.notificore.ru/v1.0/sms/create"
 
     def _get_auth_headers(self) -> dict[str, str]:
@@ -31,9 +30,9 @@ class SmsClient(ApiClientBase):
                 },
                 headers=self._get_auth_headers(),
             )
-            log.system.info(response.text)
+            logger.info(response.text)
             if response.status_code != 200:
-                log.system.error("Ошибка отправки кода авторизации")
+                logger.error("Ошибка отправки кода авторизации")
                 raise DomainError(ErrorCodes.ERROR_SEND_SMS)
 
             return response.json()

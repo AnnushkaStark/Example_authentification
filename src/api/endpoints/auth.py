@@ -8,12 +8,10 @@ from fastapi.requests import Request
 
 from src.api.depends.auth import AuthServiceDepends
 from src.api.depends.auth import Credentilals
-from src.api.depends.auth import get_current_user
 from src.config.configs import google_settings
 from src.config.configs import yandex_settings
 from src.constants.errors import ErrorCodes
 from src.schemas.auth import BaseRegister
-from src.schemas.auth import Register
 from src.utils.errors import errs
 
 router = APIRouter()
@@ -30,7 +28,7 @@ router = APIRouter()
     ),
 )
 async def create_user(
-    schema: Register, service: AuthServiceDepends, request: Request
+    schema: BaseRegister, service: AuthServiceDepends, request: Request
 ):
     return await service.register(schema=schema, request=request)
 

@@ -1,8 +1,7 @@
-from dddshared.logger import log
-
 from src.commons.base import ApiClientBase
 from src.config.configs import app_settings
 from src.config.configs import tg_api_gatway_settings
+from src.utils.logger import logger
 
 
 class TgGatwayClient(ApiClientBase):
@@ -12,7 +11,7 @@ class TgGatwayClient(ApiClientBase):
         return {"Authorization": f"Bearer {tg_api_gatway_settings.GATWAY_KEY}"}
 
     async def send_tg_verification(self, code: str, phone: str) -> None:
-        log.system.info("Отправка отп кода аутентификации")
+        logger.info("Отправка отп кода аутентификации")
         async with self._get_client(proxy=app_settings.TG_PROXY) as client:
             response = await client.post(
                 self.root_url,
@@ -24,4 +23,4 @@ class TgGatwayClient(ApiClientBase):
                 },
                 headers=self._get_auth_headers(),
             )
-            log.system.info(f"{response.json()}")
+            logger.info(f"{response.json()}")

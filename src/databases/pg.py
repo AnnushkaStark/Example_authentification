@@ -1,9 +1,13 @@
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import Integer
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.sql.sqltypes import ARRAY
+from sqlalchemy.sql.sqltypes import String
 
 from src.config.configs import db_settings
 
@@ -37,3 +41,11 @@ async def _add_to_session(session: AsyncSession, obj) -> None:
     await session.commit()
     await session.refresh(obj)
     return obj
+
+
+class Base(DeclarativeBase):
+    type_annotation_map = {
+        list: ARRAY,
+        list[str]: ARRAY(String),
+        list[int]: ARRAY(Integer),
+    }
