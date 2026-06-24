@@ -4,9 +4,9 @@ PYTHON := uv run
 
 export UV_PROJECT_ENVIRONMENT
 
-.PHONY: ci tests up_home up_home_d down run_home venv
+.PHONY: ruff tests up_home up_home_d down run_home venv
 
-ci:
+ruff:
 	uv run ruff format
 	uv run ruff check --fix
 
