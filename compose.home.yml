@@ -58,17 +58,17 @@ services:
     networks:
       - app-network
   
- # worker:
- #   build:
- #     context: .
-  #    dockerfile: Dockerfile
-  #  command: sh -c "python -m taskiq worker src.tasks:broker src.tasks"
-  #  env_file: .env
-  #  depends_on:
-  #    - redis
-  #    - auth_db
-  #  networks:
-  #    - app-network 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "python -m taskiq worker src.tasks:broker src.tasks"
+    env_file: .env
+    depends_on:
+      - redis
+      - auth_db
+    networks:
+      - app-network 
 
 volumes:
   pgdata:

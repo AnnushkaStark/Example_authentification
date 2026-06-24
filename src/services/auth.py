@@ -57,7 +57,7 @@ class AuthService:
         self.state = state
         self.facebook_client = facebook_client
 
-    async def _extract_clean_client_info(request: Request) -> dict:
+    def _extract_clean_client_info(self, request: Request) -> dict:
         ip_address = (
             request.headers.get("X-Real-IP")
             or request.headers.get("X-Forwarded-For")
@@ -92,14 +92,13 @@ class AuthService:
             logger.warning("Номер телефона уже зарегистрирован")
             raise DomainError(ErrorCodes.PHONE_NUMBER_ALREADY_EXISTS)
 
-    async def register(self, schema: BaseRegister, request: Request) -> User:
+    async def register(self, schema: BaseRegister) -> User:
         logger.info("Регитсрация пользователя")
         await self._schema_validate(schema=schema)
         schema.password = hash_password(password=schema.password)
 
         user = await self.user_repository.create(
             schema=schema,
-            commit=False,
         )
         return user
 
@@ -114,7 +113,7 @@ class AuthService:
                 expired_at=datetime.now()
                 + timedelta(minutes=jwt_settings.JWT_REFRESH_TOKEN_EXPIRES),
                 user_id=user_id,
-                client_info=self._extract_clean_client_info(request),
+                client_info=self._extract_clean_client_info(request=request),
             ),
         )
         tokens = create_tokens(
@@ -153,6 +152,9 @@ class AuthService:
     async def refresh(
         self, credentials: JwtAuthorizationCredentials, request: Request
     ) -> dict[str, str]:
+        if credentials is None:
+            raise DomainError(ErrorCodes.UNAUTHORIZED)
+        
         logger.info("Обновление токена пользователя")
         found_session = await self.user_session_repository.get_by_uid(
             uid=credentials.subject["jti"]
@@ -168,12 +170,12 @@ class AuthService:
         found_user = await self.user_repository.get_by_uid(
             credentials.subject["uid"]
         )
-        if not found_user or not found_user.is_active:
+        if not found_user:
             logger.warning("Пользователь не найден или заблокирован")
             raise DomainError(ErrorCodes.UNAUTHORIZED)
 
         await self.user_session_repository.partitial_update(
-            uid=found_session.uid, new_value=False, value_name="is_active"
+            obj_id=found_session.id, new_value=False, value_name="is_active"
         )
         return await self._create_user_session(
             uid=found_user.uid, user_id=found_user.id, request=request
@@ -195,7 +197,7 @@ class AuthService:
 
             case "all_device":
                 found_user = await self.user_repository.get_by_uid(
-                    uid=credentials.subject.uid
+                    uid=credentials.subject["uid"]
                 )
                 if not found_user:
                     logger.error("пользователь не найден")

@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import UserSession
 from src.repositories.base import BaseRepository
+from uuid import UUID
+from typing import Any
 
 
 class UserSessionRepository(BaseRepository):
@@ -33,3 +35,13 @@ class UserSessionRepository(BaseRepository):
             .values(is_active=False)
         )
         await self.session.commit()
+
+    async def partitial_update(
+        self, uid: UUID, new_value: Any, value_name: str, commit: bool = True
+    ) -> None:
+        obj = await self.get_by_uid(uid=uid)
+        if obj:
+            obj.__setattr__(value_name, new_value)
+
+        if commit:
+            await self.session.commit()

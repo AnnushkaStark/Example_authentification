@@ -31,9 +31,9 @@ router = APIRouter()
     ),
 )
 async def create_user(
-    schema: BaseRegister, service: AuthServiceDepends, request: Request
+    schema: BaseRegister, service: AuthServiceDepends
 ):
-    return await service.register(schema=schema, request=request)
+    return await service.register(schema=schema)
 
 
 @router.post(
@@ -46,11 +46,10 @@ async def create_user(
 async def login_jwt(
     schema: UserLogin,
     service: AuthServiceDepends,
-    user_agent: str | None = Header(None, alias="User-Agent"),
-    x_real_ip: str | None = Header(None, alias="X-Real-IP"),
+    request: Request
 ):
     return await service.login_jwt(
-        schema=schema, header=user_agent, ip=x_real_ip
+        schema=schema, request=request
     )
 
 
@@ -62,11 +61,10 @@ async def login_jwt(
 async def refresh(
     credentials: Credentilals,
     service: AuthServiceDepends,
-    user_agent: str | None = Header(None, alias="User-Agent"),
-    x_real_ip: str | None = Header(None, alias="X-Real-IP"),
+    request: Request
 ):
     return await service.refresh(
-        credentials=credentials, header=user_agent, ip=x_real_ip
+        credentials=credentials, request=request
     )
 
 
@@ -176,7 +174,7 @@ async def get_facebook_callback(
     status_code=status.HTTP_200_OK,
 )
 async def auth_phone(
-    phone: str, service: AuthServiceDepends, mode: Literal["sms", "tg", "max"]
+    phone: str, service: AuthServiceDepends, mode: Literal["sms", "tg"]
 ):
     return await service.auth_otp(phone=phone, mode=mode)
 
@@ -194,10 +192,9 @@ async def auth_phone(
 async def verify_otp(
     code: str,
     service: AuthServiceDepends,
-    user_agent: str | None = Header(None, alias="User-Agent"),
-    x_real_ip: str | None = Header(None, alias="X-Real-IP"),
+    request: Request
 ):
-    return await service.login_otp(code=code, header=user_agent, ip=x_real_ip)
+    return await service.login_otp(code=code, request=request)
 
 
 @router.get("/sms/callback/")

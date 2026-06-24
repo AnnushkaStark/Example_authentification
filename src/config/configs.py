@@ -62,6 +62,7 @@ class YandexSettings(BaseSetting):
 class AppSettings(BaseSetting):
     FRONTEND_URL: str
     OAUTH_SUCESS_URL: str
+    TG_PROXY: str
 
 
 class SmsSettings(BaseSetting):
